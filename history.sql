@@ -250,7 +250,8 @@ CREATE TABLE "SOLAR_NEW" (
 	"new_sum"	FLOAT
 );
 CREATE TABLE "GAS_NEW" (
-	"ts"		INTEGER,
+	"ts"		  FLOAT,
+  "ts_cr"   FLOAT,
 	"value"		FLOAT,
 	"diff"		FLOAT,
 	"old_sum"	FLOAT,
@@ -506,6 +507,11 @@ WHERE
   SOLAR_NEW.ts = CTE_DIFF_SOLAR_SUM.ts AND
   SOLAR_NEW.old_sum IS NOT NULL;
 
+WITH CTE_DIFF_GAS_VALUE AS (
+	SELECT ts, round(value - (lag(value, 1, 0) OVER (ORDER BY ts)), 3) AS diff
+	FROM GAS_NEW
+	ORDER BY ts
+)
 UPDATE GAS_NEW
 SET diff = CTE_DIFF_GAS_VALUE.diff
 FROM CTE_DIFF_GAS_VALUE
